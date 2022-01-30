@@ -1,4 +1,4 @@
-use std::ops::Add;
+use std::{ops::Add, sync::Arc};
 
 #[cfg(feature = "noise")]
 use rand_distr::{Distribution, Normal, NormalError};
@@ -130,10 +130,12 @@ impl Add for Signal {
     }
 }
 
+use crate::io;
+
 impl super::Client for Signals {
     type I = ();
     type O = Vec<f64>;
-    fn produce(&mut self) -> Option<Vec<Self::O>> {
+    fn produce(&mut self) -> Option<Vec<io::S<Self::O>>> {
         log::debug!("produce {:?}", self.outputs_size);
         if self.step < self.n_step {
             let i = self.step;
@@ -142,10 +144,12 @@ impl super::Client for Signals {
                 self.signals
                     .iter()
                     .map(|signals| {
-                        signals
+                        let data: io::Data<Self::O> = signals
                             .iter()
                             .map(|signal| signal.get(i))
                             .collect::<Vec<_>>()
+                            .into();
+                        Arc::new(data)
                     })
                     .collect(),
             )

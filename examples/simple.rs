@@ -1,6 +1,6 @@
 use dos_actors::prelude::*;
 use rand_distr::{Distribution, Normal};
-use std::{ops::Deref, time::Instant};
+use std::{ops::Deref, sync::Arc, time::Instant};
 
 #[derive(Default, Debug)]
 struct Signal {
@@ -12,7 +12,7 @@ struct Signal {
 impl Client for Signal {
     type I = ();
     type O = f64;
-    fn produce(&mut self) -> Option<Vec<Self::O>> {
+    fn produce(&mut self) -> Option<Vec<io::S<Self::O>>> {
         if self.step < self.n_step {
             let value = (2.
                 * std::f64::consts::PI
@@ -27,27 +27,10 @@ impl Client for Signal {
                             + 0.1))
                         .sin();
             self.step += 1;
-            Some(vec![value, value])
+            Some(vec![into_arc(value), into_arc(value)])
         } else {
             None
         }
-    }
-}
-
-#[derive(Default, Debug)]
-struct Logging(Vec<f64>);
-impl Deref for Logging {
-    type Target = Vec<f64>;
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-impl Client for Logging {
-    type I = f64;
-    type O = ();
-    fn consume(&mut self, data: Vec<&Self::I>) -> &mut Self {
-        self.0.extend(data.into_iter());
-        self
     }
 }
 
@@ -61,7 +44,7 @@ impl Default for Filter {
     fn default() -> Self {
         Self {
             data: 0f64,
-            noise: Normal::new(0.3, 0.05).unwrap(),
+            noise: Normal::new(1.0, 0.05).unwrap(),
             step: 0,
         }
     }
@@ -69,8 +52,8 @@ impl Default for Filter {
 impl Client for Filter {
     type I = f64;
     type O = f64;
-    fn consume(&mut self, data: Vec<&Self::I>) -> &mut Self {
-        self.data = *data[0];
+    fn consume(&mut self, data: Vec<io::S<Self::I>>) -> &mut Self {
+        self.data = **data[0];
         self
     }
     fn update(&mut self) -> &mut Self {
@@ -80,8 +63,25 @@ impl Client for Filter {
         self.step += 1;
         self
     }
-    fn produce(&mut self) -> Option<Vec<Self::O>> {
-        Some(vec![self.data])
+    fn produce(&mut self) -> Option<Vec<io::S<Self::O>>> {
+        Some(vec![into_arc(self.data)])
+    }
+}
+
+#[derive(Default, Debug)]
+pub struct Logging(Vec<f64>);
+impl std::ops::Deref for Logging {
+    type Target = Vec<f64>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl Client for Logging {
+    type I = f64;
+    type O = ();
+    fn consume(&mut self, data: Vec<io::S<Self::I>>) -> &mut Self {
+        self.0.push(**data[0]);
+        self
     }
 }
 

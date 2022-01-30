@@ -1,6 +1,6 @@
 use crate::{io::*, ActorError, Client, Result};
 use futures::future::join_all;
-use std::{fmt::Display, marker::PhantomData, ops::Deref, sync::Arc};
+use std::{fmt::Display, marker::PhantomData};
 
 /// Builder for an actor without outputs
 pub struct Terminator<I, const NI: usize>(PhantomData<I>);
@@ -80,23 +80,23 @@ where
         }
     }
     // Gathers the [Actor::inputs] data
-    fn get_data(&self) -> Vec<&I> {
+    fn get_data(&self) -> Vec<S<I>> {
         self.inputs
             .as_ref()
             .unwrap()
             .iter()
-            .map(|input| input.data.deref().deref())
+            .map(|input| input.data.clone())
             .collect()
     }
     // Allocates new data to the [Actor::outputs]
-    fn set_data(&mut self, new_data: Vec<O>) -> &mut Self {
+    fn set_data(&mut self, new_data: Vec<S<O>>) -> &mut Self {
         self.outputs
             .as_mut()
             .unwrap()
             .iter_mut()
             .zip(new_data.into_iter())
             .for_each(|(output, data)| {
-                output.data = Arc::new(Data(data));
+                output.data = data;
             });
         self
     }
@@ -110,7 +110,7 @@ where
         self
     }
     /// Gathers all the inputs from other [Actor] outputs
-    pub async fn collect(&mut self) -> Result<Vec<&I>> {
+    pub async fn collect(&mut self) -> Result<Vec<S<I>>> {
         let futures: Vec<_> = self
             .inputs
             .as_mut()
@@ -146,7 +146,7 @@ where
         //Ok(self.get_data())
     }
     /// Sends the outputs to other [Actor] inputs
-    pub async fn distribute(&mut self, data: Option<Vec<O>>) -> Result<&Self> {
+    pub async fn distribute(&mut self, data: Option<Vec<S<O>>>) -> Result<&Self> {
         if let Some(data) = data {
             self.set_data(data);
             let futures: Vec<_> = self
@@ -215,7 +215,7 @@ where
     Vec<O>: Clone,
 {
     /// Bootstraps an actor outputs
-    pub async fn bootstrap(&mut self, data: Option<Vec<O>>) -> Result<()> {
+    pub async fn bootstrap(&mut self, data: Option<Vec<S<O>>>) -> Result<()> {
         Ok(if NO >= NI {
             self.distribute(data).await?;
         } else {

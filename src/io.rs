@@ -36,7 +36,10 @@ where
     }
 }
 
-pub(crate) type S<T> = Arc<Data<T>>;
+pub type S<T> = Arc<Data<T>>;
+pub fn into_arc<T: Default>(data: T) -> S<T> {
+    Arc::new(Data(data))
+}
 
 /// [Actor](crate::Actor)s input
 #[derive(Debug)]

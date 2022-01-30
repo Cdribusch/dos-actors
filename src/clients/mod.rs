@@ -40,17 +40,24 @@ pub enum ClientError {
     ParquetError(#[from] parquet::errors::ParquetError),
 }
 
+use crate::io;
 /// Client method specifications
 pub trait Client {
     //: std::fmt::Debug {
     type I;
     type O;
     /// Processes the [Actor](crate::Actor) [inputs](crate::Actor::inputs) for the client
-    fn consume(&mut self, _data: Vec<&Self::I>) -> &mut Self {
+    fn consume(&mut self, _data: Vec<io::S<Self::I>>) -> &mut Self
+    where
+        <Self as Client>::I: Default,
+    {
         self
     }
     /// Generates the [outputs](crate::Actor::outputs) from the client
-    fn produce(&mut self) -> Option<Vec<Self::O>> {
+    fn produce(&mut self) -> Option<Vec<io::S<Self::O>>>
+    where
+        <Self as Client>::O: Default,
+    {
         Default::default()
     }
     /// Updates the state of the client
@@ -76,31 +83,32 @@ where
 {
     type I = Vec<T>;
     type O = ();
-    fn consume(&mut self, data: Vec<&Self::I>) -> &mut Self {
+    fn consume(&mut self, data: Vec<io::S<Self::I>>) -> &mut Self {
         log::debug!(
             "receive #{} inputs: {:?}",
             data.len(),
             data.iter().map(|x| x.len()).collect::<Vec<usize>>()
         );
-        self.0.push(data.into_iter().flatten().cloned().collect());
+        self.0
+            .push(data.into_iter().flat_map(|x| (**x).clone()).collect());
         self
     }
 }
 
 /// Sample-and-hold rate transionner
 #[derive(Debug, Default)]
-pub struct Sampler<T>(Vec<T>);
+pub struct Sampler<T: Default>(Vec<io::S<T>>);
 impl<T> Client for Sampler<T>
 where
-    T: std::fmt::Debug + Clone,
+    T: std::fmt::Debug + Clone + Default,
 {
     type I = T;
     type O = T;
-    fn consume(&mut self, data: Vec<&Self::I>) -> &mut Self {
-        self.0 = data.into_iter().cloned().collect();
+    fn consume(&mut self, data: Vec<io::S<Self::I>>) -> &mut Self {
+        self.0 = data;
         self
     }
-    fn produce(&mut self) -> Option<Vec<Self::O>> {
-        Some(self.0.drain(..).collect())
+    fn produce(&mut self) -> Option<Vec<io::S<Self::O>>> {
+        Some(self.0.clone())
     }
 }
