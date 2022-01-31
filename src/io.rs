@@ -27,25 +27,33 @@ where
         data.to_vec()
     }
 }
-impl<T> From<Vec<T>> for Data<Vec<T>>
+impl<T> From<T> for Data<T>
 where
     T: Default,
 {
-    fn from(u: Vec<T>) -> Self {
+    fn from(u: T) -> Self {
         Data(u)
+    }
+}
+pub trait Wrap<T> {
+    fn wrap(data: T) -> Self;
+}
+
+impl<T> Wrap<T> for Vec<S<T>>
+where
+    T: Default,
+{
+    fn wrap(u: T) -> Self {
+        vec![Arc::new(Data(u))]
     }
 }
 
 pub type S<T> = Arc<Data<T>>;
-pub fn into_arc<T: Default>(data: T) -> S<T> {
-    Arc::new(Data(data))
-}
 
 /// [Actor](crate::Actor)s input
 #[derive(Debug)]
 pub struct Input<T: Default, const N: usize> {
-    pub data: S<T>,
-    pub rx: Receiver<S<T>>,
+    rx: Receiver<S<T>>,
 }
 impl<T, const N: usize> Input<T, N>
 where
@@ -53,52 +61,46 @@ where
 {
     /// Creates a new intput from a [Receiver] and data [Default]
     pub fn new(rx: Receiver<S<T>>) -> Self {
-        Self {
-            data: Default::default(),
-            rx,
-        }
+        Self { rx }
     }
     /// Receives output data
-    pub async fn recv(&mut self) -> Result<&mut Self> {
-        self.data = self.rx.recv_async().await?;
-        Ok(self)
+    pub async fn recv(&mut self) -> Result<S<T>> {
+        Ok(self.rx.recv_async().await?)
     }
 }
-impl<T, const N: usize> From<&Input<Vec<T>, N>> for Vec<T>
-where
-    T: Default + Clone,
-{
-    fn from(input: &Input<Vec<T>, N>) -> Self {
-        input.data.as_ref().into()
-    }
-}
+
 /// [Actor](crate::Actor)s output
 #[derive(Debug)]
 pub struct Output<T: Default, const N: usize> {
-    pub data: S<T>,
-    pub tx: Vec<Sender<S<T>>>,
+    tx: Vec<Sender<S<T>>>,
 }
 impl<T: Default, const N: usize> Output<T, N> {
     /// Creates a new output from a [Sender] and data [Default]
     pub fn new(tx: Vec<Sender<S<T>>>) -> Self {
-        Self {
-            data: Default::default(),
-            tx,
-        }
+        Self { tx }
+    }
+    pub fn len(&self) -> usize {
+        self.tx.len()
+    }
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+    /// Drops all senders
+    pub fn disconnect(&mut self) {
+        self.tx.iter_mut().for_each(drop);
     }
     /// Sends output data
-    pub async fn send(&self) -> Result<&Self> {
+    pub async fn send(&self, data: S<T>) -> Result<Vec<()>> {
         let futures: Vec<_> = self
             .tx
             .iter()
-            .map(|tx| tx.send_async(self.data.clone()))
+            .map(|tx| tx.send_async(data.clone()))
             .collect();
-        join_all(futures)
+        Ok(join_all(futures)
             .await
             .into_iter()
             .collect::<std::result::Result<Vec<()>, flume::SendError<_>>>()
-            .map_err(|_| flume::SendError(()))?;
-        Ok(self)
+            .map_err(|_| flume::SendError(()))?)
     }
 }
 /// Returns one output connected to multiple inputs

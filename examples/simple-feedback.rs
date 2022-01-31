@@ -13,7 +13,7 @@ struct Signal {
 impl Client for Signal {
     type I = ();
     type O = f64;
-    fn produce(&mut self) -> Option<Vec<Self::O>> {
+    fn produce(&mut self) -> Option<Vec<io::S<Self::O>>> {
         if self.step < self.n_step {
             let value = (2.
                 * std::f64::consts::PI
@@ -28,7 +28,7 @@ impl Client for Signal {
                             + 0.1))
                         .sin();
             self.step += 1;
-            Some(vec![value, value])
+            Some(vec![io::Data::from(value).into()])
         } else {
             None
         }
@@ -45,8 +45,8 @@ impl Deref for Logging {
 impl Client for Logging {
     type I = f64;
     type O = ();
-    fn consume(&mut self, data: Vec<&Self::I>) -> &mut Self {
-        self.0.extend(data.into_iter());
+    fn consume(&mut self, data: Vec<io::S<Self::I>>) -> &mut Self {
+        self.0.extend(data.into_iter().map(|x| **x));
         self
     }
 }
@@ -69,8 +69,8 @@ impl Default for Filter {
 impl Client for Filter {
     type I = f64;
     type O = f64;
-    fn consume(&mut self, data: Vec<&Self::I>) -> &mut Self {
-        self.data = *data[0];
+    fn consume(&mut self, data: Vec<io::S<Self::I>>) -> &mut Self {
+        self.data = **data[0];
         self
     }
     fn update(&mut self) -> &mut Self {
@@ -80,8 +80,8 @@ impl Client for Filter {
         self.step += 1;
         self
     }
-    fn produce(&mut self) -> Option<Vec<Self::O>> {
-        Some(vec![self.data])
+    fn produce(&mut self) -> Option<Vec<io::S<Self::O>>> {
+        Some(wrap!(self.data))
     }
 }
 
@@ -90,42 +90,37 @@ struct Compensator(f64);
 impl Client for Compensator {
     type I = f64;
     type O = f64;
-    fn consume(&mut self, data: Vec<&Self::I>) -> &mut Self {
-        self.0 = data[0] - data[1];
+    fn consume(&mut self, data: Vec<io::S<Self::I>>) -> &mut Self {
+        self.0 = **data[0] - **data[1];
         self
     }
-    fn produce(&mut self) -> Option<Vec<Self::O>> {
-        Some(vec![self.0, self.0])
+    fn produce(&mut self) -> Option<Vec<io::S<Self::O>>> {
+        Some(vec![io::Data::from(self.0).into(); 2])
     }
 }
 #[derive(Debug, Default)]
 pub struct Integrator {
     gain: f64,
-    mem: Vec<f64>,
+    mem: f64,
 }
 impl Integrator {
     pub fn new(gain: f64, n_data: usize) -> Self {
-        Self {
-            gain,
-            mem: vec![0f64; n_data],
-        }
+        Self { gain, mem: 0f64 }
     }
-    pub fn last(&self) -> Option<Vec<f64>> {
-        Some(self.mem.clone())
+    pub fn last(&self) -> Option<f64> {
+        Some(self.mem)
     }
 }
 impl Client for Integrator {
     type I = f64;
     type O = f64;
-    fn consume(&mut self, data: Vec<&Self::I>) -> &mut Self {
+    fn consume(&mut self, data: Vec<io::S<Self::I>>) -> &mut Self {
         let gain = self.gain;
-        self.mem.iter_mut().zip(data).for_each(|(a, v)| {
-            *a += *v * gain;
-        });
+        self.mem += **data[0] * gain;
         self
     }
-    fn produce(&mut self) -> Option<Vec<Self::O>> {
-        self.last()
+    fn produce(&mut self) -> Option<Vec<io::S<Self::O>>> {
+        self.last().map(|x| vec![io::Data::from(x).into()])
     }
 }
 
@@ -145,8 +140,8 @@ async fn main() -> anyhow::Result<()> {
     let (mut source, mut filter, mut compensator, mut integrator, mut sink) =
         stage!(f64: source >> filter, compensator, integrator << sink);
 
-    channel!(source => filter => compensator => integrator => compensator => sink);
-    channel!(source => sink);
+    channel![source => (filter,sink)];
+    channel![filter => compensator => integrator => compensator => sink];
 
     let gain = thread_rng().gen_range(0f64..1f64);
     println!("Integrator gain: {:.3}", gain);
@@ -154,7 +149,11 @@ async fn main() -> anyhow::Result<()> {
         (source, signal,),
         (filter, Filter::default(),),
         (compensator, Compensator::default(),),
-        (integrator, Integrator::new(gain, 1), vec![0f64])
+        (
+            integrator,
+            Integrator::new(gain, 1),
+            vec![io::Data::from(0f64).into()]
+        )
     );
     let now = Instant::now();
     run!(sink, logging);

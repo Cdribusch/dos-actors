@@ -1,6 +1,6 @@
 use dos_actors::prelude::*;
 use rand_distr::{Distribution, Normal};
-use std::{ops::Deref, sync::Arc, time::Instant};
+use std::{ops::Deref, time::Instant};
 
 #[derive(Default, Debug)]
 struct Signal {
@@ -27,7 +27,7 @@ impl Client for Signal {
                             + 0.1))
                         .sin();
             self.step += 1;
-            Some(vec![into_arc(value), into_arc(value)])
+            Some(vec![io::Data::from(value).into()])
         } else {
             None
         }
@@ -44,7 +44,7 @@ impl Default for Filter {
     fn default() -> Self {
         Self {
             data: 0f64,
-            noise: Normal::new(1.0, 0.05).unwrap(),
+            noise: Normal::new(0.3, 0.05).unwrap(),
             step: 0,
         }
     }
@@ -64,7 +64,7 @@ impl Client for Filter {
         self
     }
     fn produce(&mut self) -> Option<Vec<io::S<Self::O>>> {
-        Some(vec![into_arc(self.data)])
+        Some(vec![io::Data::from(self.data).into()])
     }
 }
 
@@ -80,7 +80,7 @@ impl Client for Logging {
     type I = f64;
     type O = ();
     fn consume(&mut self, data: Vec<io::S<Self::I>>) -> &mut Self {
-        self.0.push(**data[0]);
+        self.0.extend(data.into_iter().map(|x| **x));
         self
     }
 }
@@ -116,8 +116,8 @@ async fn main() -> anyhow::Result<()> {
 
     let (mut source, mut filter, mut sink) = stage!(f64: source >> filter << sink);
 
-    channel!(source => filter => sink);
-    channel!(source => sink);
+    channel![source => (filter , sink)];
+    channel![filter => sink];
 
     spawn!((source, signal,), (filter, Filter::default(),));
     let now = Instant::now();

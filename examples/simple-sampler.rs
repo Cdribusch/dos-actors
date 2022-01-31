@@ -1,9 +1,6 @@
 use dos_actors::prelude::*;
 use rand_distr::{Distribution, Normal};
-use std::{
-    ops::{Deref, DerefMut},
-    time::Instant,
-};
+use std::{ops::Deref, time::Instant};
 
 #[derive(Default, Debug)]
 struct Signal {
@@ -15,7 +12,7 @@ struct Signal {
 impl Client for Signal {
     type I = ();
     type O = f64;
-    fn produce(&mut self) -> Option<Vec<Self::O>> {
+    fn produce(&mut self) -> Option<Vec<io::S<Self::O>>> {
         if self.step < self.n_step {
             let value = (2.
                 * std::f64::consts::PI
@@ -30,7 +27,7 @@ impl Client for Signal {
                             + 0.1))
                         .sin();
             self.step += 1;
-            Some(vec![value])
+            Some(vec![io::Data::from(value).into()])
         } else {
             None
         }
@@ -47,8 +44,8 @@ impl Deref for Logging {
 impl Client for Logging {
     type I = f64;
     type O = ();
-    fn consume(&mut self, data: Vec<&Self::I>) -> &mut Self {
-        self.0.extend(data.into_iter());
+    fn consume(&mut self, data: Vec<io::S<Self::I>>) -> &mut Self {
+        self.0.extend(data.into_iter().map(|x| **x));
         self
     }
 }
@@ -71,8 +68,8 @@ impl Default for Filter {
 impl Client for Filter {
     type I = f64;
     type O = f64;
-    fn consume(&mut self, data: Vec<&Self::I>) -> &mut Self {
-        self.data = *data[0];
+    fn consume(&mut self, data: Vec<io::S<Self::I>>) -> &mut Self {
+        self.data = **data[0];
         self
     }
     fn update(&mut self) -> &mut Self {
@@ -82,22 +79,22 @@ impl Client for Filter {
         self.step += 1;
         self
     }
-    fn produce(&mut self) -> Option<Vec<Self::O>> {
-        Some(vec![self.data])
+    fn produce(&mut self) -> Option<Vec<io::S<Self::O>>> {
+        Some(vec![io::Data::from(self.data).into()])
     }
 }
 
 #[derive(Default, Debug)]
-struct Sampler(f64);
+struct Sampler(io::S<f64>);
 impl Client for Sampler {
     type I = f64;
     type O = f64;
-    fn consume(&mut self, data: Vec<&Self::I>) -> &mut Self {
-        self.0 = *data[0];
+    fn consume(&mut self, data: Vec<io::S<Self::I>>) -> &mut Self {
+        self.0 = data[0].clone();
         self
     }
-    fn produce(&mut self) -> Option<Vec<Self::O>> {
-        Some(vec![self.0])
+    fn produce(&mut self) -> Option<Vec<io::S<Self::O>>> {
+        Some(vec![self.0.clone()])
     }
 }
 

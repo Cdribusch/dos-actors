@@ -348,9 +348,7 @@ pub mod prelude {
     pub use super::{
         channel,
         clients::{Logging, Sampler, Signal, Signals},
-        count, io,
-        io::into_arc,
-        one_to_any, one_to_many, run, spawn, stage, Actor, AnyInputs, Client, Initiator,
-        Terminator,
+        count, io, one_to_any, one_to_many, run, spawn, stage, wrap, Actor, AnyInputs, Client,
+        Initiator, Terminator,
     };
 }

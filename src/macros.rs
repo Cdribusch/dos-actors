@@ -1,3 +1,5 @@
+/// Macros to reduce boilerplate code
+
 #[macro_export]
 macro_rules! count {
     () => (0usize);
@@ -93,6 +95,11 @@ macro_rules! channel [
 	    let inputs = one_to_any(&mut $from, $no);
 	    $(let inputs = inputs.and_then(|inputs| inputs.any(&mut[&mut $to]));)+
 	};
+	($from:ident => ($($to:ident),+)) => {
+	    let no: usize = count!($($to)+);
+	    let inputs = one_to_any(&mut $from, no);
+	    $(let inputs = inputs.and_then(|inputs| inputs.any(&mut[&mut $to]));)+
+	};
 	($from:ident => ($($to:ident),+); $n:expr) => {
 	    let no: usize = count!($($to)+);
 	    (0..$n).for_each(|_| {
@@ -137,3 +144,9 @@ macro_rules! spawn {
         });)+
     };
 }
+#[macro_export]
+macro_rules! wrap [
+    ($data:expr) => {
+        vec![$crate::io::Data::from($data).into()]
+    };
+];
