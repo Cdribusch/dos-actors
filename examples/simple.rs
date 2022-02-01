@@ -1,6 +1,6 @@
 use dos_actors::prelude::*;
 use rand_distr::{Distribution, Normal};
-use std::{ops::Deref, time::Instant};
+use std::{any::Any, ops::Deref, sync::Arc, time::Instant};
 
 #[derive(Default, Debug)]
 struct Signal {
@@ -10,9 +10,7 @@ struct Signal {
     pub step: usize,
 }
 impl Client for Signal {
-    type I = ();
-    type O = f64;
-    fn produce(&mut self) -> Option<Vec<io::S<Self::O>>> {
+    fn produce(&mut self) -> Option<Arc<dyn io::DataObject>> {
         if self.step < self.n_step {
             let value = (2.
                 * std::f64::consts::PI
@@ -27,7 +25,8 @@ impl Client for Signal {
                             + 0.1))
                         .sin();
             self.step += 1;
-            Some(vec![io::Data::from(value).into()])
+            let data: io::Data<f64> = io::Data::from(value);
+            Some(Arc::new(data))
         } else {
             None
         }
@@ -50,21 +49,24 @@ impl Default for Filter {
     }
 }
 impl Client for Filter {
-    type I = f64;
-    type O = f64;
-    fn consume(&mut self, data: Vec<io::S<Self::I>>) -> &mut Self {
-        self.data = **data[0];
-        self
+    fn consume(&mut self, data: Arc<dyn io::DataObject>) {
+        let it: &dyn Any = data.as_any();
+        match it.downcast_ref::<io::Data<f64>>() {
+            Some(data) => {
+                self.data = **data;
+            }
+            None => panic!(),
+        }
     }
-    fn update(&mut self) -> &mut Self {
+    fn update(&mut self) {
         self.data += 0.05
             * (2. * std::f64::consts::PI * self.step as f64 * (1e3f64 * 2e-2).recip()).sin()
             + self.noise.sample(&mut rand::thread_rng());
         self.step += 1;
-        self
     }
-    fn produce(&mut self) -> Option<Vec<io::S<Self::O>>> {
-        Some(vec![io::Data::from(self.data).into()])
+    fn produce(&mut self) -> Option<Arc<dyn io::DataObject>> {
+        let data: io::Data<f64> = io::Data::from(self.data);
+        Some(Arc::new(data))
     }
 }
 
@@ -77,11 +79,14 @@ impl std::ops::Deref for Logging {
     }
 }
 impl Client for Logging {
-    type I = f64;
-    type O = ();
-    fn consume(&mut self, data: Vec<io::S<Self::I>>) -> &mut Self {
-        self.0.extend(data.into_iter().map(|x| **x));
-        self
+    fn consume(&mut self, data: Arc<dyn io::DataObject>) {
+        let it: &dyn Any = data.as_any();
+        match it.downcast_ref::<io::Data<f64>>() {
+            Some(data) => {
+                self.0.push(**data);
+            }
+            None => panic!(),
+        }
     }
 }
 
@@ -114,7 +119,7 @@ async fn main() -> anyhow::Result<()> {
      }
      */
 
-    let (mut source, mut filter, mut sink) = stage!(f64: source >> filter << sink);
+    let (mut source, mut filter, mut sink) = stage!(source >> filter << sink);
 
     channel![source => (filter , sink)];
     channel![filter => sink];

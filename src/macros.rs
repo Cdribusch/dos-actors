@@ -29,27 +29,27 @@ macro_rules! count {
 /// let (mut source, mut actor1, mut actor2, sink) = stage!(Vec<f64>: src >> (a1[10] => a2) << sink)
 ///```
 macro_rules! stage {
-        ($data:ty: $initiator:ident >> $($actor:ident),* $(($a1:ident[$rate:ty] => $a2:ident)),* << $terminator:ident ) => {
+        ($initiator:ident >> $($actor:ident),* $(($a1:ident[$rate:ty] => $a2:ident)),* << $terminator:ident ) => {
             (
-                Initiator::<$data, 1>::build().tag(stringify!($initiator)),
-		$(Actor::<$data, $data, 1, 1>::new().tag(stringify!($actor)),)*
+                Initiator::< 1>::build().tag(stringify!($initiator)),
+		$(Actor::<  1, 1>::new().tag(stringify!($actor)),)*
 		$(
-		    Actor::<$data, $data, 1, $rate>::new().tag(stringify!($a1)),
-		    Actor::<$data, $data, $rate, 1>::new().tag(stringify!($a2)),
+		    Actor::<  1, $rate>::new().tag(stringify!($a1)),
+		    Actor::<  $rate, 1>::new().tag(stringify!($a2)),
 		)*
-                Terminator::<$data, 1>::build().tag(stringify!($terminator)),
+                Terminator::< 1>::build().tag(stringify!($terminator)),
             )
         };
-        ($data:ty: ($initiator:ident[$irate:ty] => $sampler:ident), $($actor:ident),* $(($a1:ident[$rate:ty] => $a2:ident)),* << $terminator:ident ) => {
+        (($initiator:ident[$irate:ty] => $sampler:ident), $($actor:ident),* $(($a1:ident[$rate:ty] => $a2:ident)),* << $terminator:ident ) => {
             (
-                Initiator::<$data, $irate>::build().tag(stringify!($initiator)),
-		Actor::<$data, $data, $irate, 1>::new().tag(stringify!($sampler)),
-		$(Actor::<$data, $data, 1, 1>::new().tag(stringify!($actor)),)*
+                Initiator::< $irate>::build().tag(stringify!($initiator)),
+		Actor::<  $irate, 1>::new().tag(stringify!($sampler)),
+		$(Actor::<  1, 1>::new().tag(stringify!($actor)),)*
 		$(
-		    Actor::<$data, $data, 1, $rate>::new().tag(stringify!($a1)),
-		    Actor::<$data, $data, $rate, 1>::new().tag(stringify!($a2)),
+		    Actor::<  1, $rate>::new().tag(stringify!($a1)),
+		    Actor::<  $rate, 1>::new().tag(stringify!($a2)),
 		)*
-                Terminator::<$data, 1>::build().tag(stringify!($terminator)),
+                Terminator::< 1>::build().tag(stringify!($terminator)),
             )
         };
     }

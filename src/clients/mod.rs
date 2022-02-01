@@ -25,8 +25,8 @@ pub mod m1;
 #[cfg(feature = "apache-arrow")]
 pub mod arrow_client;
 
-pub mod signals;
-pub use signals::{Signal, Signals};
+//pub mod signals;
+//pub use signals::{Signal, Signals};
 
 #[derive(Debug, thiserror::Error)]
 pub enum ClientError {
@@ -40,32 +40,36 @@ pub enum ClientError {
     ParquetError(#[from] parquet::errors::ParquetError),
 }
 
+use std::sync::Arc;
+
 use crate::io;
 /// Client method specifications
 pub trait Client {
-    //: std::fmt::Debug {
-    type I;
-    type O;
     /// Processes the [Actor](crate::Actor) [inputs](crate::Actor::inputs) for the client
-    fn consume(&mut self, _data: Vec<io::S<Self::I>>) -> &mut Self
-    where
-        <Self as Client>::I: Default,
-    {
-        self
-    }
+    fn consume(&mut self, _data: Arc<dyn io::DataObject>) {}
     /// Generates the [outputs](crate::Actor::outputs) from the client
-    fn produce(&mut self) -> Option<Vec<io::S<Self::O>>>
-    where
-        <Self as Client>::O: Default,
-    {
-        Default::default()
+    fn produce(&mut self) -> Option<Arc<dyn io::DataObject>> {
+        None
     }
     /// Updates the state of the client
-    fn update(&mut self) -> &mut Self {
+    fn update(&mut self) {}
+}
+
+pub trait Consumer<T = (), I = io::Void> {
+    /// Processes the [Actor](crate::Actor) [inputs](crate::Actor::inputs) for the client
+    fn consume(&mut self, _data: Arc<dyn io::DataObject>) -> &mut Self {
         self
     }
 }
+impl<T, I> Consumer<T, I> for Box<dyn Client> {}
 
+pub trait Producer<T = (), I = io::Void> {
+    /// Generates the [outputs](crate::Actor::outputs) from the client
+    fn produce(&mut self) -> Option<Arc<dyn io::DataObject>> {
+        None
+    }
+}
+/*
 /// Simple data logging
 ///
 /// Accumulates all the inputs in a single [Vec]
@@ -112,3 +116,4 @@ where
         Some(self.0.clone())
     }
 }
+*/
