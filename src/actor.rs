@@ -1,4 +1,4 @@
-use crate::{io::*, ActorError, Client, Result};
+use crate::{clients::ClientGeneric, io::*, ActorError, Client, Result};
 use futures::future::join_all;
 use std::fmt::Display;
 
@@ -69,7 +69,7 @@ impl<const NI: usize, const NO: usize> Actor<NI, NO> {
         self
     }
     /// Gathers all the inputs from other [Actor] outputs
-    pub async fn collect<C: Client>(&mut self, client: &mut C) -> Result<&mut Self> {
+    pub async fn collect(&mut self, client: &mut dyn Client) -> Result<&mut Self> {
         let futures: Vec<_> = self
             .inputs
             .as_mut()
@@ -89,14 +89,14 @@ impl<const NI: usize, const NO: usize> Actor<NI, NO> {
             Err(e) => Err(e),
             Ok(data) => {
                 for data in data.into_iter() {
-                    client.consume(data);
+                    data.consumer(client);
                 }
                 Ok(self)
             }
         }
     }
     /// Sends the outputs to other [Actor] inputs
-    pub async fn distribute<C: Client>(&mut self, client: &mut C) -> Result<&Self> {
+    pub async fn distribute(&mut self, client: &mut dyn Client) -> Result<&Self> {
         let futures: Vec<_> = self
             .outputs
             .as_ref()
@@ -120,7 +120,7 @@ impl<const NI: usize, const NO: usize> Actor<NI, NO> {
     ///
     /// The loop ends when the client data is [None] or when either the sending of receiving
     /// end of a channel is dropped
-    pub async fn run<C: Client>(&mut self, client: &mut C) -> Result<()> {
+    pub async fn run(&mut self, client: &mut dyn Client) -> Result<()> {
         match (self.inputs.as_ref(), self.outputs.as_ref()) {
             (Some(_), Some(_)) => {
                 if NO >= NI {
@@ -161,7 +161,7 @@ impl<const NI: usize, const NO: usize> Actor<NI, NO> {
 }
 impl<const NI: usize, const NO: usize> Actor<NI, NO> {
     /// Bootstraps an actor outputs
-    pub async fn bootstrap<C: Client>(&mut self, client: &mut C) -> Result<()> {
+    pub async fn bootstrap(&mut self, client: &mut dyn Client) -> Result<()> {
         Ok(if NO >= NI {
             self.distribute(client).await?;
         } else {

@@ -1,6 +1,9 @@
 //! [Actor](crate::Actor)s [Input]/[Output]
 
-use crate::{ActorError, Result};
+use crate::{
+    clients::{ClientGeneric, Querializer},
+    ActorError, Client, Result,
+};
 use flume::{Receiver, Sender};
 use futures::future::join_all;
 use std::{any::Any, marker::PhantomData, ops::Deref, sync::Arc};
@@ -51,8 +54,19 @@ impl<T: 'static> DataObjectToAny for T {
         self
     }
 }
-pub trait DataObject: DataObjectToAny + Send + Sync {}
-impl<T: 'static + Send + Sync, I: 'static + Send + Sync> DataObject for Data<T, I> {}
+pub trait DataObject: Send + Sync {
+    fn consumer(&self, client: &mut dyn Client);
+}
+impl<T, I> DataObject for Data<T, I>
+where
+    T: 'static + Send + Sync,
+    I: 'static + Send + Sync,
+{
+    fn consumer(&self, client: &mut dyn Client) {
+        client.consume(self.clone());
+    }
+}
+impl<T, I> Querializer for Data<T, I> {}
 
 pub type S<T> = Arc<Data<T>>;
 

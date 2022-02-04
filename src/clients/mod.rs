@@ -44,8 +44,66 @@ use std::sync::Arc;
 
 use crate::io;
 /// Client method specifications
+pub trait Querializer {}
+
+pub trait ClientGeneric {
+    // Not object safe because of this generic method.
+    fn consume<Q: Querializer>(&self, data: Q);
+}
+
+impl<'a, T: ?Sized> Querializer for &'a T where T: Querializer {}
+//impl<'a, T: ?Sized> DataObject for &'a T where T: DataObject {}
+//impl<Q: Querializer, I: Identifier> DataObject for Data<Q, I> {}
+
+impl<'a, T: ?Sized> ClientGeneric for Box<T>
+where
+    T: ClientGeneric,
+{
+    fn consume<Q: Querializer>(&self, data: Q) {
+        (**self).consume(data)
+    }
+}
+
+/////////////////////////////////////////////////////////////////////
+// This is an object-safe equivalent that interoperates seamlessly.
+pub trait Client {
+    fn erased_fn(&self, data: &dyn Querializer);
+    fn produce(&mut self) -> Option<Arc<dyn io::DataObject>> {
+        None
+    }
+    /// Updates the state of the client
+    fn update(&mut self) {}
+}
+
+impl ClientGeneric for dyn Client + '_ {
+    // Depending on the trait method signatures and the upstream
+    // impls, could also implement for:
+    //
+    //   - &'a dyn Client
+    //   - &'a (dyn Client + Send)
+    //   - &'a (dyn Client + Sync)
+    //   - &'a (dyn Client + Send + Sync)
+    //   - Box<dyn Client>
+    //   - Box<dyn Client + Send>
+    //   - Box<dyn Client + Sync>
+    //   - Box<dyn Client + Send + Sync>
+    fn consume<Q: Querializer>(&self, data: Q) {
+        self.erased_fn(&data)
+    }
+}
+
+impl<T> Client for T
+where
+    T: ClientGeneric,
+{
+    fn erased_fn(&self, data: &dyn Querializer) {
+        self.consume(data)
+    }
+}
+/*
 pub trait Client {
     /// Processes the [Actor](crate::Actor) [inputs](crate::Actor::inputs) for the client
+    //fn consume<Q>(&mut self, _data: Q) {}
     fn consume(&mut self, _data: Arc<dyn io::DataObject>) {}
     /// Generates the [outputs](crate::Actor::outputs) from the client
     fn produce(&mut self) -> Option<Arc<dyn io::DataObject>> {
@@ -54,21 +112,8 @@ pub trait Client {
     /// Updates the state of the client
     fn update(&mut self) {}
 }
+*/
 
-pub trait Consumer<T = (), I = io::Void> {
-    /// Processes the [Actor](crate::Actor) [inputs](crate::Actor::inputs) for the client
-    fn consume(&mut self, _data: Arc<dyn io::DataObject>) -> &mut Self {
-        self
-    }
-}
-impl<T, I> Consumer<T, I> for Box<dyn Client> {}
-
-pub trait Producer<T = (), I = io::Void> {
-    /// Generates the [outputs](crate::Actor::outputs) from the client
-    fn produce(&mut self) -> Option<Arc<dyn io::DataObject>> {
-        None
-    }
-}
 /*
 /// Simple data logging
 ///
