@@ -1,0 +1,644 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'dos-actors'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "dos-actors",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'aco'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=aco",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "aco",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'aco'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=aco",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "aco",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'batch_fem'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=batch_fem",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "batch_fem",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'batch_fem'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=batch_fem",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "batch_fem",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'fem'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=fem",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "fem",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'fem'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=fem",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "fem",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'm1'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=m1",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "m1",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'm1'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=m1",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "m1",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'm1m2_rbm_ctrl'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=m1m2_rbm_ctrl",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "m1m2_rbm_ctrl",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'm1m2_rbm_ctrl'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=m1m2_rbm_ctrl",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "m1m2_rbm_ctrl",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'm1_rbm_ctrl'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=m1_rbm_ctrl",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "m1_rbm_ctrl",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'm1_rbm_ctrl'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=m1_rbm_ctrl",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "m1_rbm_ctrl",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'm2_rbm_ctrl'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=m2_rbm_ctrl",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "m2_rbm_ctrl",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'm2_rbm_ctrl'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=m2_rbm_ctrl",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "m2_rbm_ctrl",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'mount'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=mount",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "mount",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'mount'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=mount",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "mount",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'simple'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=simple",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "simple",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'simple'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=simple",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "simple",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'windloads'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=windloads",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "windloads",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in example 'windloads'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--example=windloads",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "windloads",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'zero_mount'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=zero_mount",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "zero_mount",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'setpoint_mount'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=setpoint_mount",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "setpoint_mount",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'zero_mount-m1'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=zero_mount-m1",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "zero_mount-m1",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'setpoint_mount-m1'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=setpoint_mount-m1",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "setpoint_mount-m1",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'zero_mount-m1-m2'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=zero_mount-m1-m2",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "zero_mount-m1-m2",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'setpoint_mount-m1-m2'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=setpoint_mount-m1-m2",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "setpoint_mount-m1-m2",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'zero_mount-m1-m2-tt'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=zero_mount-m1-m2-tt",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "zero_mount-m1-m2-tt",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'setpoint_mount-m1-m2-tt'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=setpoint_mount-m1-m2-tt",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "setpoint_mount-m1-m2-tt",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'setpoint_mount-m1-m2-sh48'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=setpoint_mount-m1-m2-sh48",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "setpoint_mount-m1-m2-sh48",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'setpoint_mount-m1-m2-tt-lom'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=setpoint_mount-m1-m2-tt-lom",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "setpoint_mount-m1-m2-tt-lom",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'setpoint_mount-m1-rbm'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=setpoint_mount-m1-rbm",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "setpoint_mount-m1-rbm",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'setpoint_mount-m1sx'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=setpoint_mount-m1sx",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "setpoint_mount-m1sx",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'zero_mount-m1-rbm'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=zero_mount-m1-rbm",
+                    "--package=dos-actors"
+                ],
+                "filter": {
+                    "name": "zero_mount-m1-rbm",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

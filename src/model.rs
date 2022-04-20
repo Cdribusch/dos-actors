@@ -60,7 +60,7 @@ Model::new(vec![Box::new(source), Box::new(sampler), Box::new(sink)])
        .check()?;
 # Ok::<(), dos_actors::model::ModelError>(())
 ```
-The model run the actor tasks:
+The model runs the actor tasks:
 ```
 # tokio_test::block_on(async {
 # use dos_actors::prelude::*;
